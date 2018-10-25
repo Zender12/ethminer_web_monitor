@@ -1,0 +1,46 @@
+version: '3'
+services:
+    monitor_web:
+        container_name: monitor-web
+        hostname: "monitor.local"
+        build: ./build/web
+        volumes:
+            - ../../:/var/www/sources
+        depends_on:
+            - monitor_database
+        networks:
+            monitor_net:
+                ipv4_address: 192.168.0.10
+
+    monitor_database:
+        hostname: "monitor-db.local"
+        container_name: monitor-database
+        build: ./build/db
+        env_file:
+            - env/mysql.env
+        tty: true
+        networks:
+            monitor_net:
+                ipv4_address: 192.168.0.20
+
+    monitor_phpmyadmin:
+        hostname: "monitor-pma.local"
+        container_name: monitor-phpmyadmin
+        image: phpmyadmin/phpmyadmin
+        env_file:
+            - env/pma.env
+        restart: always
+        depends_on:
+            - monitor_database
+        networks:
+            monitor_net:
+                ipv4_address: 192.168.0.30
+
+networks:
+    monitor_net:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+            - subnet: 192.168.0.0/24
+
